@@ -2,6 +2,7 @@ package ru.hukutoc2288.permissionsdispatcher
 
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -22,6 +23,8 @@ class SimpleNeverAskDialogFragment(): DialogFragment() {
     private lateinit var title: String
     private lateinit var message: String
 
+    private var onCancelListener: DialogInterface.OnCancelListener? = null
+
     constructor(dispatcher: SimplePermissionsDispatcher, title: String, message: String): this(){
         this.dispatcher = dispatcher
         this.title = title
@@ -31,6 +34,7 @@ class SimpleNeverAskDialogFragment(): DialogFragment() {
     private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         // There are no request codes
         if (ContextCompat.checkSelfPermission(requireContext(), dispatcher.permission) == PackageManager.PERMISSION_GRANTED) {
+            requireDialog().setOnCancelListener(null)
             dismiss()
             dispatcher.currentRunnable.run()
         }
@@ -67,9 +71,11 @@ class SimpleNeverAskDialogFragment(): DialogFragment() {
     }
 
     override fun onStart() {
-        super.onStart() //super.onStart() is where dialog.show() is actually called on the underlying dialog, so we have to do it after this point
-        val d = dialog as AlertDialog?
-        if (d != null) {
+        super.onStart()
+        // bruh this code is so oversugared
+        // 22.07.2021 huku
+        (dialog as AlertDialog?)?.let{ d ->
+            onCancelListener?.let { d.setOnCancelListener(it) }
             val positiveButton: Button = d.getButton(Dialog.BUTTON_POSITIVE) as Button
             positiveButton.setOnClickListener {
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
@@ -78,5 +84,10 @@ class SimpleNeverAskDialogFragment(): DialogFragment() {
                 resultLauncher.launch(intent)
             }
         }
+    }
+
+    fun setOnCancelListener(listener: DialogInterface.OnCancelListener): SimpleNeverAskDialogFragment {
+        dialog?.let {setOnCancelListener(listener)} ?: run { onCancelListener = listener }
+        return this
     }
 }

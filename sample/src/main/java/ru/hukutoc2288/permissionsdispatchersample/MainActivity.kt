@@ -1,6 +1,7 @@
 package ru.hukutoc2288.permissionsdispatchersample
 
 import android.Manifest
+import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -27,15 +28,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onNeverAskAgain() {
-            SimpleNeverAskDialogFragment(this, getString(R.string.camera_never_again_title),
-                    getString(R.string.camera_never_again_message))
-                    .show(supportFragmentManager, "cameraRationale")
+            SimpleNeverAskDialogFragment(
+                this, getString(R.string.camera_never_again_title),
+                getString(R.string.camera_never_again_message)
+            )
+                .setOnCancelListener { finish() }
+                .show(supportFragmentManager, "cameraRationale")
         }
 
         override fun onShowRationale() {
-            SimpleRationaleDialogFragment(this, getString(R.string.camera_rationale_title),
-                    getString(R.string.camera_rationale_message))
-                    .show(supportFragmentManager, "cameraNeverAgain")
+            SimpleRationaleDialogFragment(
+                this, getString(R.string.camera_rationale_title),
+                getString(R.string.camera_rationale_message)
+            )
+                .show(supportFragmentManager, "cameraNeverAgain")
         }
 
     }
@@ -64,10 +70,10 @@ class MainActivity : AppCompatActivity() {
 
             // Preview
             val preview = Preview.Builder()
-                    .build()
-                    .also {
-                        it.setSurfaceProvider(viewFinder.surfaceProvider)
-                    }
+                .build()
+                .also {
+                    it.setSurfaceProvider(viewFinder.surfaceProvider)
+                }
 
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -78,7 +84,8 @@ class MainActivity : AppCompatActivity() {
 
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                        this, cameraSelector, preview)
+                    this, cameraSelector, preview
+                )
 
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
@@ -89,7 +96,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
-                baseContext, it) == PackageManager.PERMISSION_GRANTED
+            baseContext, it
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
 
@@ -106,6 +114,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        dispatcher.onRequestPermissionsResult(this,grantResults)
+        dispatcher.onRequestPermissionsResult(this, grantResults)
     }
 }
