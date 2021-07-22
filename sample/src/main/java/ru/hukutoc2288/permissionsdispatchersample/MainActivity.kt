@@ -15,21 +15,27 @@ import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import ru.hukutoc2288.permissionsdispatcher.SimpleNeverAskDialogFragment
 import ru.hukutoc2288.permissionsdispatcher.SimplePermissionsDispatcher
+import ru.hukutoc2288.permissionsdispatcher.SimpleRationaleDialogFragment
 
 class MainActivity : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
 
-    val dispatcher = object : SimplePermissionsDispatcher(Manifest.permission.CAMERA){
+    private val dispatcher = object : SimplePermissionsDispatcher(Manifest.permission.CAMERA) {
         override fun onPermissionDenied() {
-            TODO("Not yet implemented")
+            Toast.makeText(applicationContext, getString(R.string.camera_denied), Toast.LENGTH_SHORT).show()
+            finish()
         }
 
         override fun onNeverAskAgain() {
-            SimpleNeverAskDialogFragment(this, getString(R.string.camera_never_again_title),"")
+            SimpleNeverAskDialogFragment(this, getString(R.string.camera_never_again_title),
+                    getString(R.string.camera_never_again_message))
+                    .show(supportFragmentManager, "cameraRationale")
         }
 
         override fun onShowRationale() {
-            TODO("Not yet implemented")
+            SimpleRationaleDialogFragment(this, getString(R.string.camera_rationale_title),
+                    getString(R.string.camera_rationale_message))
+                    .show(supportFragmentManager, "cameraNeverAgain")
         }
 
     }
@@ -39,11 +45,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // Request camera permissions
-        if (allPermissionsGranted()) {
+        dispatcher.executeWithPermission(this) {
             startCamera()
-        } else {
-            ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
 
         // Set up the listener for take photo button
@@ -61,10 +64,10 @@ class MainActivity : AppCompatActivity() {
 
             // Preview
             val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(viewFinder.surfaceProvider)
-                }
+                    .build()
+                    .also {
+                        it.setSurfaceProvider(viewFinder.surfaceProvider)
+                    }
 
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -75,9 +78,9 @@ class MainActivity : AppCompatActivity() {
 
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview)
+                        this, cameraSelector, preview)
 
-            } catch(exc: Exception) {
+            } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
             }
 
@@ -86,7 +89,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
-            baseContext, it) == PackageManager.PERMISSION_GRANTED
+                baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
 
@@ -101,18 +104,8 @@ class MainActivity : AppCompatActivity() {
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults:
-        IntArray) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                startCamera()
-            } else {
-                Toast.makeText(this,
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT).show()
-                finish()
-            }
-        }
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        dispatcher.onRequestPermissionsResult(this,grantResults)
     }
 }

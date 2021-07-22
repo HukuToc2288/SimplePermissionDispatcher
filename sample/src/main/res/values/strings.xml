@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">SimplePermissionDispatcher</string>
     <string name="camera_never_again_title">Camera permission cannot be requested</string>
+    <string name="camera_never_again_message">Camera cannot be started as you denied camera permission. If you want to use this functionality you can go to settings and allow this permissions manually</string>
+    <string name="camera_rationale_title">Please grant camera permission!</string>
+    <string name="camera_rationale_message">To use camera application need camera permission. Click \"Allow\" on the next screen to grant this permission</string>
+    <string name="camera_denied">Camera will not start as you denied camera permission</string>
 </resources>
