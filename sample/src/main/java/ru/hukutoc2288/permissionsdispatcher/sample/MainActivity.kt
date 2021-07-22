@@ -1,62 +1,102 @@
 package ru.hukutoc2288.permissionsdispatcher.sample
 
-import android.content.Context
-import android.graphics.ImageFormat
-import android.hardware.camera2.CameraAccessException
-import android.hardware.camera2.CameraCharacteristics
-import android.hardware.camera2.CameraManager
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import android.util.Size
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import kotlinx.android.synthetic.main.activity_main.*
 import ru.hukutoc2288.permissionsdispatcher.R
 
-
 class MainActivity : AppCompatActivity() {
-    private val LOG_TAG = "CAMERA"
-    lateinit var cameras: Array<String>
+    private var imageCapture: ImageCapture? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        try {
-            // Получение списка камер с устройства
-            cameras = cameraManager.cameraIdList
+        // Request camera permissions
+        if (allPermissionsGranted()) {
+            startCamera()
+        } else {
+            ActivityCompat.requestPermissions(
+                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+        }
 
-            // выводим информацию по камере
-            for (cameraID in cameras) {
-                Log.i(LOG_TAG, "cameraID: $cameraID")
-                val id = cameraID.toInt()
+        // Set up the listener for take photo button
+        camera_capture_button.setOnClickListener { takePhoto() }
+    }
 
-                // Получениe характеристик камеры
-                val cc: CameraCharacteristics = cameraManager.getCameraCharacteristics(cameraID)
-                // Получения списка выходного формата, который поддерживает камера
-                val configurationMap = cc.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+    private fun takePhoto() {}
 
-                //  Определение какая камера куда смотрит
-                val Faceing = cc.get(CameraCharacteristics.LENS_FACING)
-                if (Faceing == CameraCharacteristics.LENS_FACING_FRONT) {
-                    Log.i(LOG_TAG, "Camera with ID: $cameraID  is FRONT CAMERA  ")
+    private fun startCamera() {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
+        cameraProviderFuture.addListener(Runnable {
+            // Used to bind the lifecycle of cameras to the lifecycle owner
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+
+            // Preview
+            val preview = Preview.Builder()
+                .build()
+                .also {
+                    it.setSurfaceProvider(viewFinder.surfaceProvider)
                 }
-                if (Faceing == CameraCharacteristics.LENS_FACING_BACK) {
-                    Log.i(LOG_TAG, "Camera with: ID $cameraID is BACK CAMERA  ")
-                }
 
+            // Select back camera as a default
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-                // Получения списка разрешений которые поддерживаются для формата jpeg
-                val sizesJPEG: Array<Size>? = configurationMap!!.getOutputSizes(ImageFormat.JPEG)
-                if (sizesJPEG != null) {
-                    for (item in sizesJPEG) {
-                        Log.i(LOG_TAG, "w:" + item.getWidth().toString() + " h:" + item.getHeight())
-                    }
-                } else {
-                    Log.i(LOG_TAG, "camera don`t support JPEG")
-                }
+            try {
+                // Unbind use cases before rebinding
+                cameraProvider.unbindAll()
+
+                // Bind use cases to camera
+                cameraProvider.bindToLifecycle(
+                    this, cameraSelector, preview)
+
+            } catch(exc: Exception) {
+                Log.e(TAG, "Use case binding failed", exc)
             }
-        } catch (e: CameraAccessException) {
-            e.printStackTrace()
+
+        }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(
+            baseContext, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+    }
+
+    companion object {
+        private const val TAG = "CameraXBasic"
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private const val REQUEST_CODE_PERMISSIONS = 10
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>, grantResults:
+        IntArray) {
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                startCamera()
+            } else {
+                Toast.makeText(this,
+                    "Permissions not granted by the user.",
+                    Toast.LENGTH_SHORT).show()
+                finish()
+            }
         }
     }
 }
