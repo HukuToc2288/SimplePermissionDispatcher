@@ -1,4 +1,4 @@
-package ru.hukutoc2288.simplepermissiondispatcher
+package ru.hukutoc2288.simplepermissionsdispatcher
 
 import org.junit.Test
 

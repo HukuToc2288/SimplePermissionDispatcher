@@ -1,4 +1,4 @@
-package ru.hukutoc2288.simplepermissiondispatcher
+package ru.hukutoc2288.simplepermissionsdispatcher
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("ru.hukutoc2288.simplepermissiondispatcher", appContext.packageName)
+        assertEquals("ru.hukutoc2288.simplepermissionsdispatcher.test", appContext.packageName)
     }
 }
