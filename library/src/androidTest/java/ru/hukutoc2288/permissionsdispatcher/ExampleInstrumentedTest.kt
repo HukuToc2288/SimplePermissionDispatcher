@@ -1,4 +1,4 @@
-package ru.hukutoc2288.simplepermissionsdispatcher
+package ru.hukutoc2288.permissionsdispatcher
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
