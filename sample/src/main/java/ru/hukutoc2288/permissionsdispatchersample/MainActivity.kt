@@ -1,4 +1,4 @@
-package ru.hukutoc2288.permissionsdispatcher.sample
+package ru.hukutoc2288.permissionsdispatchersample
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -13,10 +13,26 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_main.*
-import ru.hukutoc2288.permissionsdispatcher.R
+import ru.hukutoc2288.permissionsdispatcher.SimpleNeverAskDialogFragment
+import ru.hukutoc2288.permissionsdispatcher.SimplePermissionsDispatcher
 
 class MainActivity : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
+
+    val dispatcher = object : SimplePermissionsDispatcher(Manifest.permission.CAMERA){
+        override fun onPermissionDenied() {
+            TODO("Not yet implemented")
+        }
+
+        override fun onNeverAskAgain() {
+            SimpleNeverAskDialogFragment(this, getString(R.string.camera_never_again_title),"")
+        }
+
+        override fun onShowRationale() {
+            TODO("Not yet implemented")
+        }
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

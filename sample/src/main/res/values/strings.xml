@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SimplePermissionDispatcher</string>
+    <string name="camera_never_again_title">Camera permission cannot be requested</string>
 </resources>

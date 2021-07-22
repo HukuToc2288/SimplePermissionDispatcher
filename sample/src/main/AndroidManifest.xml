@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="ru.hukutoc2288.permissionsdispatcher">
+          package="ru.hukutoc2288.permissionsdispatchersample">
     <uses-permission android:name="android.permission.CAMERA" />
     <application
             android:allowBackup="true"
@@ -10,7 +10,7 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
 
-        <activity android:name=".sample.MainActivity">
+        <activity android:name="ru.hukutoc2288.permissionsdispatchersample.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
