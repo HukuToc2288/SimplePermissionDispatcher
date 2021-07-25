@@ -10,12 +10,13 @@ private var currentRequestCode = 0
 abstract class SimplePermissionsDispatcher(internal val permission: String) {
 
     private val requestCode = currentRequestCode++
-    internal lateinit var currentRunnable: Runnable
+    internal lateinit var currentRunnable: () -> Unit
 
-    fun executeWithPermission(context: Activity, runnable: Runnable) {
+    fun executeWithPermission(context: Activity, runnable: () -> Unit) {
         if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-            runnable.run()
-        } else { currentRunnable = runnable
+            runnable()
+        } else {
+            currentRunnable = runnable
             if (ActivityCompat.shouldShowRequestPermissionRationale(context, permission)) {
                 onShowRationale()
             } else {
@@ -25,13 +26,12 @@ abstract class SimplePermissionsDispatcher(internal val permission: String) {
     }
 
     fun onRequestPermissionsResult(context: Activity, grantResults: IntArray) {
-        if (grantResults.isEmpty()){
-            SimpleRationaleDialogFragment()
+        if (grantResults.isEmpty()) {
             // something seems to be broken, don't process this
             return
         }
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            currentRunnable.run()
+            currentRunnable()
         } else {
             if (ActivityCompat.shouldShowRequestPermissionRationale(context, permission)) {
                 onPermissionDenied()

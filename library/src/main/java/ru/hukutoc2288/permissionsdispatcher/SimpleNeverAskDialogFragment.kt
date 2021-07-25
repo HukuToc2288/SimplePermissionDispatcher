@@ -36,7 +36,7 @@ class SimpleNeverAskDialogFragment(): DialogFragment() {
         if (ContextCompat.checkSelfPermission(requireContext(), dispatcher.permission) == PackageManager.PERMISSION_GRANTED) {
             requireDialog().setOnCancelListener(null)
             dismiss()
-            dispatcher.currentRunnable.run()
+            dispatcher.currentRunnable()
         }
     }
 
@@ -77,6 +77,11 @@ class SimpleNeverAskDialogFragment(): DialogFragment() {
         (dialog as AlertDialog?)?.let{ d ->
             onCancelListener?.let { d.setOnCancelListener(it) }
             val positiveButton: Button = d.getButton(Dialog.BUTTON_POSITIVE) as Button
+            // It is semi-dark magic that overrides default button behavior, when dialog dismissed
+            // after clicking positive button whenever it calls dismiss() or not
+            // As we don't want to close dialog before user grants permission or dismiss it manually
+            // this behavior has to be overridden
+            // 25.07.2021 huku
             positiveButton.setOnClickListener {
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                 val uri = Uri.fromParts("package", requireActivity().packageName, null)
